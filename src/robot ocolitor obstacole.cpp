@@ -1,5 +1,9 @@
 #include <Servo.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
 Servo servoMotor;
+LiquidCrystal_I2C lcd(0x3f,16,2);  // setare LCD display (0x27 for a 16 chars and 2 line display)
 
 int Echo = A3;  
 int Trig = A2; 
@@ -17,6 +21,55 @@ float distanta;
 #define PIN_Servo 12
 
 int stangaDistanta = 0, dreaptaDistanta = 0, inainteDistanta = 0;;
+
+// caracter ecran lcd
+byte sageataInainte[] = 
+{
+  B00000,
+  B00100,
+  B01110,
+  B11111,
+  B01110,
+  B01110,
+  B01110,
+  B01110
+};
+// caracter ecran lcd
+byte sageataInapoi[] = 
+{
+  B00000,
+  B01110,
+  B01110,
+  B01110,
+  B01110,
+  B11111,
+  B01110,
+  B00100
+};
+// caracter ecran lcd
+byte sageataDreapta[] = 
+{
+  B00000,
+  B00100,
+  B11110,
+  B11111,
+  B11110,
+  B00100,
+  B00000,
+  B00000
+};
+// caracter ecran lcd
+byte sageataStanga[] = 
+{
+  B00000,
+  B00100,
+  B01111,
+  B11111,
+  B01111,
+  B00100,
+  B00000,
+  B00000
+};
 
 void inainte(){ 
         analogWrite(a1,vitezaMasina);
@@ -53,6 +106,66 @@ void stop() {
          digitalWrite(b2,LOW);
 } 
 
+// functie pentru afisare mesaj la pornire robot
+void robotPornit()
+{                     
+  lcd.init();// initialize the lcd
+  // afisare mesaj
+  lcd.backlight();
+  lcd.setCursor(0,0); 
+  lcd.print("Hello !");
+}
+//functie afisare lcd directie deplasare
+void lcdStanga()
+{
+  lcd.init();
+  lcd.backlight();
+//  lcd.setCursor(0,0); 
+//  lcd.print("Hello !");
+  lcd.setCursor(0,1);
+  lcd.print("Stanga ");
+  lcd.setCursor(11, 1); //sageata stanga 
+  lcd.write(2);
+}
+//functie afisare lcd directie deplasare
+void lcdDreapta()
+{
+  lcd.init();
+  lcd.backlight();
+//  lcd.setCursor(0,0); 
+//  lcd.print("Hello !");
+  lcd.setCursor(0,1);
+  lcd.print("Dreapta ");
+  lcd.setCursor(15, 1); //sageata dreapta 
+  lcd.write(3);
+}
+//functie afisare lcd directie deplasare
+void lcdInainte()
+{
+  lcd.init();
+  // Print a message to the LCD.
+  lcd.backlight();
+ // lcd.setCursor(0,0); 
+ // lcd.print("Hello !");
+  lcd.setCursor(0,1);
+  lcd.print("Inainte ");
+  lcd.setCursor(13, 1); //sageata inaninte
+  lcd.write(0);
+}
+//functie afisare lcd directie deplasare
+void lcdInapoi()
+{
+  lcd.init();
+  // Print a message to the LCD.
+  lcd.backlight();
+//  lcd.setCursor(0,0); 
+//  lcd.print("Hello !");
+  lcd.setCursor(0,1);
+  lcd.print("Inapoi ");
+  lcd.setCursor(12, 1); //sageata inapoi 
+  lcd.write(1);
+}
+
 //functie testare distanta 
 int testDistanta()
 {
@@ -76,6 +189,20 @@ void setup() {
   pinMode(a1, OUTPUT);
   pinMode(a2, OUTPUT);
   stop();
+  
+  //initializare lcd display
+  lcd.init();
+  lcd.backlight();
+//lcd.setCursor(1,0); 
+//lcd.print("Hello !");
+
+  //afisare caractere lcd
+  lcd.createChar(0, sageataInainte);
+  lcd.createChar(1, sageataInapoi);
+  lcd.createChar (2,sageataStanga);
+  lcd.createChar (3,sageataDreapta);
+
+  
 } 
 
 void loop() { 
@@ -102,21 +229,26 @@ void loop() {
       delay(1000);
       if(dreaptaDistanta > stangaDistanta) {
         dreapta();
+		lcdDreapta();
         delay(360);
       }
       else if(dreaptaDistanta < stangaDistanta) {
         stanga();
+		lcdStanga();
         delay(360);
       }
       else if((dreaptaDistanta <= 40) || (stangaDistanta <= 40)) {
         inapoi();
+		lcdInapoi();
         delay(180);
       }
       else {
         inainte();
+		lcdInainte();
       }
     }  
     else {
         inainte();
+		lcdInainte();
     }                     
 }
